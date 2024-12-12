@@ -1,0 +1,7 @@
+<h1>Admin Dashboard</h1>
+<h2>Movies</h2>
+<ul>
+  {% for movie in movies %}
+    <li>{{ movie.title }} <a href="{{ url_for('movie', movie_id=movie.id) }}">Details</a></li>
+  {% endfor %}
+</ul>
