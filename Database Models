@@ -1,0 +1,56 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
+from datetime import datetime
+
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+
+# User roles constants
+ROLE_ADMIN = 'admin'
+ROLE_USER = 'user'
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), default=ROLE_USER)  # Default role is user
+    reservations = db.relationship('Reservation', backref='user', lazy=True)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    genre = db.Column(db.String(50), nullable=False)
+    poster = db.Column(db.String(200), nullable=True)  # URL for the poster image
+    showtimes = db.relationship('Showtime', backref='movie', lazy=True)
+
+    def __repr__(self):
+        return f'<Movie {self.title}>'
+
+
+class Showtime(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'), nullable=False)
+    time = db.Column(db.DateTime, nullable=False)
+    total_seats = db.Column(db.Integer, nullable=False, default=50)  # Default 50 seats
+    reservations = db.relationship('Reservation', backref='showtime', lazy=True)
+
+    def __repr__(self):
+        return f'<Showtime {self.time}>'
+
+
+class Reservation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    showtime_id = db.Column(db.Integer, db.ForeignKey('showtime.id'), nullable=False)
+    seats_reserved = db.Column(db.Integer, nullable=False)
+    reservation_time = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Reservation {self.id}>'
